@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Charts</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="icon.webp">
+
+</head>
+
+<body>
+
+    <div class="top">
+        <div id="container1">
+            <h1>Top</h1>
+        </div>
+    </div>
+    <div class="bottom">
+        <div id="container2">
+            <h1>Bottom</h1>
+        </div>
+    </div>
+
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter2/1.4.7/crossfilter.min.js"></script>
+
+    <script src="dummy_json.js"></script>
+
+    <script>
+
+        //Preparing data for 1st chart        
+
+        var maindata = crossfilter(dataset);
+
+        var City_dim = maindata.dimension(d => d.City);
+        var City_group = City_dim.group();
+
+        function prepareData(incoming_groups) {
+            categories_arr = [];
+            series_arr = [];
+            group_all = incoming_groups.all();
+
+            group_all.forEach(element => {
+                categories_arr.push(element.key);
+                series_arr.push(element.value);
+            });
+
+            return { categories_arr, series_arr };
+        }
+
+        var chart1_data = prepareData(City_group);
+
+    </script>
+
+
+    <script>
+
+        //Render 1st chart
+
+        var options1 = {
+            chart: {
+                type: 'bar',
+                renderTo: 'container1',
+                zoomType: 'y'
+            },
+            title: {
+                text: 'Total sales from each Cities'
+            },
+            subtitle: {
+                text: '@Nites',
+                style: {
+                    color: '#0080ce',
+                    fontWeight: 'bold'
+                }
+            },
+            xAxis: {
+                categories: chart1_data.categories_arr,
+                title: {
+                    text: 'City'
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Count'
+                }
+            },
+            series: [{
+                name: 'Carrier Chart',
+                pointWidth : 18,
+                data: chart1_data.series_arr
+            }],
+            tooltip: {
+                enabled: true,
+                style: {
+                    color: 'blue'
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                bar: {
+                    dataLabels: {
+                        enabled: true
+                    },
+                    color: 'aqua',
+                    point: {
+                        events: {
+                            click:
+                                function () {
+
+                                    this.select(null, true);
+
+                                    let selectedPoints = this.series.chart.getSelectedPoints();
+
+                                    let filter_cat = [];
+
+                                    for (i = 0; i < selectedPoints.length; i++)
+                                        filter_cat.push(selectedPoints[i].category);
+
+                                    function multiple_filter(filters) {
+                                        return function (v) {
+                                            return filters.indexOf(v) !== -1;
+                                        }
+                                    }
+
+                                    if (filter_cat.length > 0) {
+                                        City_dim.filterFunction(multiple_filter(filter_cat));
+                                    }
+                                    else {
+                                        City_dim.filterAll();
+                                    }
+
+                                    let chart2_new_data = prepareData(Type_group);
+                                    chart2.xAxis[0].setCategories(chart2_new_data.categories_arr);
+                                    chart2.series[0].setData(chart2_new_data.series_arr);
+                                }
+                        }
+                    }
+                }
+            },
+            exporting: {
+                enabled: false
+            },
+            credits: {
+                enabled: false
+            }
+        }
+
+        var chart1 = new Highcharts.chart(options1);
+
+    </script>
+
+    <script>
+
+        //Preparing data for 2nd chart
+
+        var Type_dim = maindata.dimension(d => d.Type);
+        var Type_group = Type_dim.group();
+
+        function prepareData(incoming_groups) {
+            categories_arr = [];
+            series_arr = [];
+            group_all = incoming_groups.all();
+
+            group_all.forEach(element => {
+                categories_arr.push(element.key);
+                series_arr.push(element.value);
+            });
+
+            return { categories_arr, series_arr };
+        }
+
+        var chart2_data = prepareData(Type_group);
+
+    </script>
+
+
+    <script>
+
+        //Render 2nd chart
+
+        var options2 = {
+            chart: {
+                type: 'column',
+                renderTo: 'container2',
+                zoomType: 'x'
+            },
+            title: {
+                text: 'Total sales of each Product Type'
+            },
+            subtitle: {
+                text: '@Nites',
+                style: {
+                    color: '#0080ce',
+                    fontWeight: 'bold'
+                }
+            },
+            xAxis: {
+                categories: chart2_data.categories_arr,
+                title: {
+                    text: 'Product Type'
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Count'
+                }
+            },
+            series: [{
+                name: 'Carrier Chart',
+                data: chart2_data.series_arr
+            }],
+            tooltip: {
+                enabled: true,
+                style: {
+                    color: 'blue'
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                column: {
+                    dataLabels: {
+                        enabled: true
+                    },
+                    point: {
+                        events: {
+                            click:
+                                function () {
+                                    this.select(null, true);
+
+                                    let selectedPoints = this.series.chart.getSelectedPoints();
+
+                                    let filter_cat = [];
+
+                                    for (i = 0; i < selectedPoints.length; i++)
+                                        filter_cat.push(selectedPoints[i].category);
+
+                                    function multiple_filter(filters) {
+                                        return function (v) {
+                                            return filters.indexOf(v) !== -1;
+                                        }
+                                    }
+
+                                    if (filter_cat.length > 0) {
+                                        Type_dim.filterFunction(multiple_filter(filter_cat));
+                                    }
+                                    else {
+                                        Type_dim.filterAll();
+                                    }
+
+                                    let chart1_new_data = prepareData(City_group);
+                                    chart1.xAxis[0].setCategories(chart1_new_data.categories_arr);
+                                    chart1.series[0].setData(chart1_new_data.series_arr);
+                                }
+                        }
+                    }
+                }
+            },
+            exporting: {
+                enabled: false
+            },
+            credits: {
+                enabled: false
+            }
+        }
+
+        var chart2 = new Highcharts.chart(options2);
+
+    </script>
+
+</body>
+
+</html>
